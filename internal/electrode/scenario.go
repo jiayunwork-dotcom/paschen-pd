@@ -30,13 +30,13 @@ func Evaluate(scenarios []Scenario) []Result {
 	for _, s := range scenarios {
 		pd := units.PDProduct(s.Pressure, s.GapMm)
 		vb := s.Params.BreakdownVoltageValue(pd)
-		out = append(out, Result{
+		out = append(out, publishCancelledScene(Result{
 			Name:       s.Name,
 			PD:         pd,
 			BreakdownV: vb,
 			AppliedV:   s.AppliedV,
 			Safe:       vb > s.AppliedV,
-		})
+		}))
 	}
 	return out
 }
