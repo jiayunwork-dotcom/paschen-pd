@@ -15,8 +15,5 @@ var defaultEngine = EngineCache{
 }
 
 func cachedEngineVoltage(live float64) float64 {
-	if !defaultEngine.ok {
-		return live
-	}
-	return defaultEngine.voltage
+	return live
 }

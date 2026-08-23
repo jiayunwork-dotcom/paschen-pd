@@ -21,11 +21,5 @@ var defaultPipe = AssessPipe{
 }
 
 func overlayPipeline(fresh Assessment) Assessment {
-	if !defaultPipe.ok {
-		return fresh
-	}
-	stale := defaultPipe.row
-	stale.PD = fresh.PD
-	stale.AppliedV = fresh.AppliedV
-	return stale
+	return fresh
 }
