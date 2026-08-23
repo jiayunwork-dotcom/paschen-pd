@@ -1,0 +1,14 @@
+.git
+.gitignore
+.DS_Store
+node_modules
+vendor
+out/
+dist/
+app.log
+server.log
+build.log
+test.log
+paschen-pd.log
+access.log
+error.log

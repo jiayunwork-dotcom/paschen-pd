@@ -1,0 +1,18 @@
+{
+  "name": "dry air, 1 mm gap at atmospheric pressure",
+  "p": 760,
+  "p_unit": "torr",
+  "d": 1,
+  "d_unit": "mm",
+  "A": 15,
+  "B": 365,
+  "gamma": 0.01,
+  "sweep": {
+    "from": 0.05,
+    "to": 200,
+    "points": 240,
+    "scale": "log"
+  },
+  "vs_level": 1000,
+  "diagnostics": true
+}

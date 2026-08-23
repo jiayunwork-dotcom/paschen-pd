@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>帕邢定律 · 气体击穿电压</title>
+  <style>
+    :root { --bg:#fff; --panel:#f5f7fa; --ink:#222; --accent:#1f6feb; --grid:#e3e8ef; --line:#d6336c; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif; background:var(--bg); color:var(--ink); }
+    header { padding:18px 24px; border-bottom:1px solid var(--grid); }
+    h1 { font-size:20px; margin:0; }
+    .sub { color:#667; font-size:13px; margin-top:4px; }
+    main { padding:20px 24px; max-width:920px; }
+    .card { background:var(--panel); border:1px solid var(--grid); border-radius:10px; padding:16px; margin-bottom:18px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:end; }
+    label { font-size:12px; color:#667; display:block; margin-bottom:4px; }
+    input { padding:8px 10px; border:1px solid var(--grid); border-radius:6px; font-size:14px; background:#fff; color:var(--ink); width:120px; }
+    button { padding:9px 16px; border:0; background:var(--accent); color:#fff; border-radius:6px; font-size:14px; cursor:pointer; }
+    #chart { width:100%; height:340px; }
+    .res { font-size:14px; line-height:1.9; }
+    .res b { color:var(--line); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>帕邢定律计算器</h1>
+    <div class="sub">气体击穿电压 V = B·p·d / (ln(A·p·d) − ln(ln(1+1/γ)))，pd 单位 Torr·cm</div>
+  </header>
+  <main>
+    <div class="card">
+      <div class="row">
+        <div><label>压力 p (Torr)</label><input id="p" type="number" value="760" step="1"></div>
+        <div><label>间隙 d (mm)</label><input id="d" type="number" value="1" step="0.1"></div>
+        <div><label>A</label><input id="A" type="number" value="15" step="0.1"></div>
+        <div><label>B</label><input id="B" type="number" value="365" step="1"></div>
+        <div><label>γ</label><input id="g" type="number" value="0.01" step="0.01"></div>
+        <button id="calc">计算击穿电压</button>
+        <button id="load">载入示例</button>
+      </div>
+      <div class="res" id="single">—</div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="align-items:center">
+        <div><label>扫描 d_min (mm)</label><input id="dmin" type="number" value="0.05" step="0.01"></div>
+        <div><label>扫描 d_max (mm)</label><input id="dmax" type="number" value="20" step="1"></div>
+        <div><label>采样点</label><input id="n" type="number" value="240" step="10"></div>
+        <label style="display:flex;align-items:center;gap:6px"><input id="log" type="checkbox" style="width:auto"> 对数间隔</label>
+        <button id="sweep">绘制帕邢曲线</button>
+      </div>
+      <svg id="chart" viewBox="0 0 760 340"></svg>
+      <div class="res" id="sweepNote">—</div>
+    </div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function params() {
+      return {
+        p: +$("p").value, d: +$("d").value,
+        A: +$("A").value, B: +$("B").value, gamma: +$("g").value
+      };
+    }
+
+    $("calc").onclick = async () => {
+      const r = await fetch("/api/breakdown", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params())
+      }).then(r => r.json());
+      if (r.error) { $("single").textContent = "错误: " + r.error; return; }
+      $("single").innerHTML =
+        `pd = <b>${r.pd_torr_cm.toFixed(4)}</b> Torr·cm<br>` +
+        `击穿电压 V = <b>${r.voltage.toFixed(1)}</b> V<br>` +
+        `帕邢极小值: pd_min = <b>${r.pd_min.toFixed(4)}</b>, V_min = <b>${r.v_min.toFixed(1)}</b> V<br>` +
+        `是否可击穿: <b>${r.breakdownable ? "是" : "否"}</b>`;
+    };
+
+    $("load").onclick = async () => {
+      const ex = await fetch("/example/air-1mm.json").then(r => r.json());
+      $("p").value = ex.p; $("d").value = ex.d;
+      $("A").value = ex.A; $("B").value = ex.B; $("g").value = ex.gamma;
+      $("calc").click();
+    };
+
+    function drawChart(points, logX) {
+      const W=760, H=340, padL=56, padB=36, padT=14, padR=14;
+      const xs = points.map(p => p.pd_torr_cm), ys = points.map(p => p.voltage);
+      const xMax = Math.max(...xs), yMax = Math.max(...ys, 1);
+      const sx = x => padL + (logX ? Math.log(x)/Math.log(xMax||1) : x/xMax) * (W-padL-padR);
+      const sy = y => H-padB - (y/yMax)*(H-padT-padB);
+      let svg = `<line x1="${padL}" y1="${H-padB}" x2="${W-padR}" y2="${H-padB}" stroke="#e3e8ef"/>`;
+      svg += `<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H-padB}" stroke="#e3e8ef"/>`;
+      let path = "M";
+      points.forEach((p,i) => { path += ` ${sx(p.pd_torr_cm).toFixed(1)},${sy(p.voltage).toFixed(1)}`; if(i<points.length-1) path += " L"; });
+      svg += `<path d="${path}" fill="none" stroke="#d6336c" stroke-width="2"/>`;
+      svg += `<text x="${padL}" y="${H-10}" fill="#667" font-size="12">pd (Torr·cm)${logX?" 对数":""}</text>`;
+      svg += `<text x="14" y="${padT+6}" fill="#667" font-size="12">V</text>`;
+      $("chart").innerHTML = svg;
+    }
+
+    $("sweep").onclick = async () => {
+      const body = {
+        p: +$("p").value, d_min: +$("dmin").value, d_max: +$("dmax").value,
+        points: +$("n").value, log: $("log").checked,
+        A: +$("A").value, B: +$("B").value, gamma: +$("g").value
+      };
+      const r = await fetch("/api/sweep", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      }).then(r => r.json());
+      if (r.error) { $("sweepNote").textContent = "错误: " + r.error; return; }
+      drawChart(r.points, body.log);
+      const peak = r.points.reduce((m,p)=>p.voltage>m.voltage?p:m, r.points[0]);
+      $("sweepNote").innerHTML = `采样 ${r.points.length} 点，最大 V = <b>${peak.voltage.toFixed(1)}</b> V @ pd=${peak.pd_torr_cm.toFixed(3)}`;
+    };
+  </script>
+</body>
+</html>
