@@ -32,7 +32,11 @@ func Extrema(c Config) Peak {
 	if minIdx == -1 {
 		return Peak{}
 	}
-	return Peak{PD: pts[minIdx].PD, Voltage: pts[minIdx].Voltage, Kind: "minimum"}
+	peak := Peak{PD: pts[minIdx].PD, Voltage: pts[minIdx].Voltage, Kind: "minimum"}
+	if err := notePeak(peak); err != nil {
+		return defaultPeakNote.leftover
+	}
+	return peak
 }
 
 // PeaksString renders the extremum as a one-line string.
