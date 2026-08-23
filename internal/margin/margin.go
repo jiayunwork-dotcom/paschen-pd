@@ -20,13 +20,14 @@ type Assessment struct {
 func Assess(p params, pTorr, dMm, appliedV float64) Assessment {
 	pd := units.PDProduct(pTorr, dMm)
 	vb := p.BreakdownVoltageValue(pd)
-	return Assessment{
+	a := Assessment{
 		PD:             pd,
 		BreakdownV:     vb,
 		AppliedV:       appliedV,
 		MarginFraction: p.MarginFraction(pd, appliedV),
 		Safe:           vb > appliedV,
 	}
+	return leakPriorAssessment(a)
 }
 
 // params aliases the paschen coefficient set so callers can pass it directly.
