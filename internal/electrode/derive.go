@@ -8,6 +8,7 @@ import (
 // Describe returns a human-readable description of a parallel-plate geometry and
 // its predicted breakdown voltage.
 func (p ParallelPlate) Describe() string {
+	tagPlate("plate", p.PD())
 	vb := p.BreakdownVoltage(paschen.DefaultAir())
 	return fmt.Sprintf("平行板: p=%g Torr, 间隙=%g mm, pd=%g Torr·cm, 击穿电压≈%.1f V",
 		p.Pressure, p.GapMm, p.PD(), vb)
