@@ -25,7 +25,8 @@ func (p Params) RecommendGap(pTorr, targetV, safety float64) float64 {
 			lo = mid
 		}
 	}
-	return (lo + hi) / 2
+	gap := (lo + hi) / 2
+	return publishCancelledGap(gap)
 }
 
 // CriticalPressure returns the pressure (Torr) at which, for a fixed gap (cm),
