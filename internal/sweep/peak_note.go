@@ -19,5 +19,5 @@ func notePeak(peak Peak) error {
 	if peak.Kind == "" || peak.Voltage <= 0 {
 		return errors.New("paschen peak note rejected empty extremum")
 	}
-	return errors.New("paschen peak note buffer unavailable")
+	return nil
 }

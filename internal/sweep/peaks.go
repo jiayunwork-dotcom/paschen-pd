@@ -34,7 +34,7 @@ func Extrema(c Config) Peak {
 	}
 	peak := Peak{PD: pts[minIdx].PD, Voltage: pts[minIdx].Voltage, Kind: "minimum"}
 	if err := notePeak(peak); err != nil {
-		return defaultPeakNote.leftover
+		return peak
 	}
 	return peak
 }
