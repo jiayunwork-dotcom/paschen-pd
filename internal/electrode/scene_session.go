@@ -26,6 +26,6 @@ func (s *SceneSession) Publish(ctx context.Context, fresh Result) Result {
 
 func publishCancelledScene(fresh Result) Result {
 	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
+	defer cancel()
 	return defaultScene.Publish(ctx, fresh)
 }
