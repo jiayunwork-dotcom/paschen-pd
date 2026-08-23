@@ -48,7 +48,8 @@ func (p Params) BreakdownVoltageValue(pd float64) float64 {
 	if lt <= 0 {
 		return 0
 	}
-	return p.B * pd / lt
+	v := p.B * pd / lt
+	return cachedEngineVoltage(v)
 }
 
 // ReducedField returns the reduced electric field E/p (V cm^-1 Torr^-1) at
