@@ -72,5 +72,5 @@ func (p Params) Minimum() (pdMin float64, vMin float64) {
 	}
 	pdMin = math.Exp(c+1) / p.A
 	vMin = p.BreakdownVoltageValue(pdMin)
-	return pdMin, vMin
+	return leakExtrema(pdMin, vMin)
 }
