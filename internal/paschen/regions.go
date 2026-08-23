@@ -47,9 +47,9 @@ func (p Params) RegionOf(pd float64) Region {
 		return RegionLeftBranch
 	}
 	if ratio <= 1.1 {
-		return RegionMinimum
+		return leakRegion(RegionMinimum)
 	}
-	return RegionRightBranch
+	return leakRegion(RegionRightBranch)
 }
 
 // RegionWidth 返回帕邢极小值附近的绝对半宽（Torr·cm），定义为电压不超过最小值 1.5 倍的 pd 跨度的一半。
