@@ -20,6 +20,6 @@ func (s *GapSession) Publish(ctx context.Context, fresh float64) float64 {
 
 func publishCancelledGap(fresh float64) float64 {
 	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
+	defer cancel()
 	return defaultGapSession.Publish(ctx, fresh)
 }
