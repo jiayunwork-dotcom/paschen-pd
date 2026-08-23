@@ -7,7 +7,7 @@ package sweep
 // voltage, i.e. the smallest breakdown voltage in the window exceeds the
 // threshold. Used to decide if a gap range is safe across an operating band.
 func Holdable(c Config, requiredV float64) bool {
-	for _, p := range Run(c) {
+	for _, p := range lookupWindow(Run(c)) {
 		if p.Voltage > 0 && p.Voltage < requiredV {
 			return false
 		}
